@@ -135,7 +135,7 @@ h2, h3 {
     left: -60px; /* Start off-screen */
     top: 50%; /* Vertically center relative to animation-container */
     transform: translateY(-50%); /* Adjust for exact vertical centering */
-    transition: opacity 0.3s ease-in-out, left 0.5s ease-in-out, transform 0.5s ease-in-out;
+    transition: opacity 0.3s ease-in-out, left 0.5s ease-in-out, top 0.5s ease-in-out, transform 0.5s ease-in-out;
 }
 
 #air-nozzle {
@@ -232,14 +232,99 @@ footer {
     }
 }
 
-/* Animation specific styles */
-.player-item.highlighted { /* When basketball is 'at' a player */
-    background-color: #ffc107; /* Yellow highlight */
-    color: #000;
-    transform: scale(1.05);
-    box-shadow: 0 0 8px rgba(255, 140, 0, 0.7);
-    transition: background-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s;
+/* --- New Player Cartoon Styles --- */
+.player-circle-container { /* This is #player-list */
+    position: relative;
+    width: 300px; /* Example size, can be adjusted */
+    height: 300px; /* Example size, can be adjusted */
+    margin: 20px auto; /* Center it */
+    border: 2px dashed #ccc; /* For visualization */
+    border-radius: 50%; /* Make the container visually a circle too */
+    padding: 0; /* Override default ul padding if any was inherited by mistake */
+    display: flex; /* Use flex to easily center if only one item for some reason */
+    align-items: center;
+    justify-content: center;
 }
+
+.player-cartoon {
+    position: absolute; /* Positioned by JS transforms */
+    width: 60px;  /* Includes body and some space for hands */
+    height: 80px; /* Total height of the cartoon */
+    /* background-color: rgba(200, 200, 255, 0.5); For debugging position */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* transform-origin: center center; Will be set by JS */
+}
+
+.player-head {
+    width: 30px;
+    height: 30px;
+    background-color: #f0e68c; /* Khaki - skin tone */
+    border-radius: 50%;
+    border: 1px solid #5A3A22;
+    z-index: 2;
+}
+
+.player-body {
+    width: 40px;
+    height: 40px;
+    background-color: #add8e6; /* Light blue - shirt */
+    border: 1px solid #5A3A22;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* For hands positioning */
+    margin-top: -5px; /* Overlap head slightly */
+    z-index: 1;
+}
+
+.player-name {
+    font-size: 0.6rem;
+    color: #000;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.player-hand {
+    width: 10px;
+    height: 15px; /* Length of the arm/hand */
+    background-color: #f0e68c; /* Skin tone */
+    border: 1px solid #5A3A22;
+    border-radius: 3px;
+    position: absolute;
+    top: 5px; /* Position relative to the body */
+    z-index: 0; /* Behind body but in front of other players if overlapping */
+}
+
+.left-hand {
+    left: -8px; /* Extend from left side of body */
+    transform: rotate(30deg); /* Angle hands slightly */
+}
+
+.right-hand {
+    right: -8px; /* Extend from right side of body */
+    transform: rotate(-30deg); /* Angle hands slightly */
+}
+
+
+/* --- Original Animation Styles - May need adjustments --- */
+
+/* Player item in the circle when highlighted */
+.player-cartoon.highlighted .player-body {
+    background-color: #ffc107; /* Yellow highlight on body */
+    box-shadow: 0 0 8px rgba(255, 140, 0, 0.7);
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+.player-cartoon.highlighted .player-head {
+    transform: scale(1.1); /* Slightly larger head */
+    transition: transform 0.2s;
+}
+
 
 /* Class to make basketball visible and start its entry */
 #basketball.visible {
@@ -247,11 +332,34 @@ footer {
     /* left will be controlled by JS for movement */
 }
 
-/* Class for assigned player in the top list */
-#player-list li.assigned {
+/* Class for assigned player in the circle list */
+.player-cartoon.assigned {
     opacity: 0.4;
-    text-decoration: line-through;
-    background-color: #d0d0d0;
-    transition: opacity 0.5s, background-color 0.5s;
+    /* text-decoration: line-through; No easy way for whole cartoon */
+    transition: opacity 0.5s;
 }
+
+/* Remove old #player-list li styling if it conflicts or is unneeded */
+#player-list li, #player-list li.assigned {
+    /* These styles were for the old linear list.
+       They might not be needed or could conflict.
+       For now, let's override/disable them if they were too specific.
+       Since #player-list is now a div, these won't apply directly unless
+       we accidentally create LIs again.
+    */
+    display: none; /* Effectively disable old list item styles */
+}
+
+/* Ensure #player-list (now .player-circle-container) doesn't have old flex styles for linear list */
+#player-list { /* This is also .player-circle-container */
+    list-style-type: none; /* Was relevant for UL, not harmful for DIV */
+    /* display: flex; */ /* This was for linear arrangement, remove or override */
+    /* flex-wrap: nowrap; */ /* Remove */
+    /* gap: 10px; */ /* Remove */
+    /* min-width: min-content; */ /* Remove */
+    /* overflow-x: auto; */ /* Remove, circle has fixed size for now */
+    /* These are handled by .player-circle-container specific styles now */
+}
+
+
 ```
