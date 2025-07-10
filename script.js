@@ -1,110 +1,252 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const generateButton = document.getElementById('generateButton');
-    const totalPlayersInput = document.getElementById('totalPlayers');
-    const teamsResultDiv = document.getElementById('teamsResult');
-    const errorMessagesDiv = document.getElementById('errorMessages');
+    const playerCountInput = document.getElementById('player-count');
+    const startAssignmentBtn = document.getElementById('start-assignment-btn');
+    const errorMessageElement = document.getElementById('error-message');
+    const playerListUL = document.getElementById('player-list');
+    const teamsDisplayDiv = document.getElementById('teams-display');
+    const basketballElement = document.getElementById('basketball');
+    const animationContainer = document.getElementById('animation-container');
+    const resetBtn = document.getElementById('reset-btn');
 
-    generateButton.addEventListener('click', () => {
-        const totalPlayers = parseInt(totalPlayersInput.value);
-        teamsResultDiv.innerHTML = ''; // Clear previous results
-        errorMessagesDiv.textContent = ''; // Clear previous errors
+    let playersInfo = []; // Stores {id, name, element, originalOrder}
+    let teams = []; // Stores final team structures
 
-        if (isNaN(totalPlayers) || totalPlayers <= 6) {
-            errorMessagesDiv.textContent = 'Please enter a valid number of players (must be greater than 6).';
+    startAssignmentBtn.addEventListener('click', () => {
+        resetState();
+        const totalPlayers = parseInt(playerCountInput.value);
+
+        if (isNaN(totalPlayers) || totalPlayers < 6) {
+            errorMessageElement.textContent = 'Please enter a valid number of players (minimum 6).';
+            return;
+        }
+        errorMessageElement.textContent = '';
+        startAssignmentBtn.disabled = true; // Disable button during processing
+        if(resetBtn) resetBtn.disabled = true;
+
+        generatePlayers(totalPlayers);
+        const teamConfigs = calculateTeamSizes(totalPlayers);
+        if (!teamConfigs) { // Should theoretically not be hit for totalPlayers >= 6
+            errorMessageElement.textContent = 'Error: Could not calculate team structure. Please try again.';
+            startAssignmentBtn.disabled = false; // Re-enable if error
+            if(resetBtn) resetBtn.disabled = false;
             return;
         }
 
-        const players = Array.from({ length: totalPlayers }, (_, i) => `Player ${i + 1}`);
-        shuffleArray(players); // Randomize player order
+        // Prepare players for assignment (shuffled)
+        const playersToAssign = shuffleArray([...playersInfo]);
+        prepareTeams(playersToAssign, teamConfigs);
 
-        const teams = assignTeams(players, totalPlayers);
-        displayTeams(teams);
+        startAnimationSequence(); // This will re-enable buttons when done
     });
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            resetState();
+            playerCountInput.value = ''; // Clear input on explicit reset
+        });
+    }
+
+    function resetState() {
+        playersInfo = [];
+        teams = [];
+        playerListUL.innerHTML = '';
+        teamsDisplayDiv.innerHTML = '';
+        errorMessageElement.textContent = '';
+
+        basketballElement.classList.remove('visible');
+        basketballElement.style.left = '-60px';
+        basketballElement.style.transform = 'translateY(-50%) rotate(0deg)';
+        const basketballAirNozzle = basketballElement.querySelector('#air-nozzle');
+        if (basketballAirNozzle) basketballAirNozzle.style.transform = 'rotate(0deg)';
+
+        // Clear any highlights from player items
+        document.querySelectorAll('#player-list li.highlighted').forEach(el => el.classList.remove('highlighted'));
+        document.querySelectorAll('#player-list li.assigned').forEach(el => el.classList.remove('assigned'));
+
+
+        startAssignmentBtn.disabled = false; // Ensure start button is usable
+        if(resetBtn) resetBtn.disabled = false; // Ensure reset button is usable
+    }
+
+    function generatePlayers(count) {
+        for (let i = 0; i < count; i++) {
+            // Store original order if needed later, though shuffling for assignment is key
+            playersInfo.push({ id: i, name: `Player ${i + 1}`, element: null, originalOrder: i });
+        }
+        renderPlayerList();
+    }
+
+    function renderPlayerList() {
+        playerListUL.innerHTML = '';
+        playersInfo.forEach(player => {
+            const li = document.createElement('li');
+            li.textContent = player.name;
+            li.dataset.playerId = player.id;
+            li.classList.add('player-item');
+            playerListUL.appendChild(li);
+            player.element = li;
+        });
+    }
+
+    function calculateTeamSizes(totalPlayers) {
+        if (totalPlayers < 6) return null;
+
+        for (let numFours = Math.floor(totalPlayers / 4); numFours >= 0; numFours--) {
+            const remainingPlayers = totalPlayers - (numFours * 4);
+            if (remainingPlayers % 3 === 0) {
+                const numThrees = remainingPlayers / 3;
+                // This combination works
+                return { teamsOf4: numFours, teamsOf3: numThrees };
+            }
+        }
+        // This should not be reached for totalPlayers >= 6, as numbers like 6,7,8,9,10,11... can always be formed.
+        // Example: 6 (0,2), 7 (1,1), 8 (2,0), 9 (0,3), 10 (1,2), 11 (2,1).
+        return null;
+    }
 
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [array[i], array[j]] = [array[j], array[i]];
         }
+        return array;
     }
 
-    function assignTeams(players, totalPlayers) {
-        const teams = [];
-        let numTeamsOfFour = 0;
-        let numTeamsOfThree = 0;
+    function prepareTeams(shuffledPlayers, teamConfigs) {
+        teams = []; // Reset global teams array
+        let playerPool = [...shuffledPlayers];
+        let teamIdCounter = 1;
 
-        // Determine the number of teams of 4 and 3
-        // We want to maximize teams of 4.
-        // Let x be the number of teams of 4, and y be the number of teams of 3.
-        // 4x + 3y = totalPlayers
-        // We need to find non-negative integers x, y.
+        for (let i = 0; i < teamConfigs.teamsOf4; i++) {
+            const team = {
+                id: teamIdCounter++,
+                name: `Team ${teamIdCounter-1}`,
+                size: 4,
+                members: [], // Player objects will be added here
+                memberElements: [] // For storing <li> elements in the team card
+            };
+            for (let j = 0; j < 4; j++) {
+                if (playerPool.length > 0) {
+                    team.members.push(playerPool.shift());
+                }
+            }
+            teams.push(team);
+        }
 
-        for (let x = Math.floor(totalPlayers / 4); x >= 0; x--) {
-            const remainingPlayers = totalPlayers - (x * 4);
-            if (remainingPlayers % 3 === 0) {
-                numTeamsOfFour = x;
-                numTeamsOfThree = remainingPlayers / 3;
-                break;
+        for (let i = 0; i < teamConfigs.teamsOf3; i++) {
+            const team = {
+                id: teamIdCounter++,
+                name: `Team ${teamIdCounter-1}`,
+                size: 3,
+                members: [],
+                memberElements: []
+            };
+            for (let j = 0; j < 3; j++) {
+                if (playerPool.length > 0) {
+                    team.members.push(playerPool.shift());
+                }
+            }
+            teams.push(team);
+        }
+    }
+
+    // --- Animation Related Functions ---
+    async function startAnimationSequence() {
+        basketballElement.style.transform = 'translateY(-50%) rotate(0deg)';
+        const basketballAirNozzle = basketballElement.querySelector('#air-nozzle');
+        basketballElement.classList.add('visible');
+        await delay(300); // Short delay for visibility
+
+        // Create team card structures in the DOM
+        teamsDisplayDiv.innerHTML = ''; // Clear any previous team cards
+        teams.forEach(team => {
+            const teamCard = document.createElement('div');
+            teamCard.classList.add('team-card');
+            teamCard.dataset.teamId = team.id;
+
+            const teamNameEl = document.createElement('h4');
+            teamNameEl.textContent = team.name;
+            teamCard.appendChild(teamNameEl);
+
+            const memberListEl = document.createElement('ul');
+            memberListEl.classList.add('team-member-list');
+            teamCard.appendChild(memberListEl);
+            teamsDisplayDiv.appendChild(teamCard);
+            team.domElement = teamCard; // Store ref to team card
+            team.memberListULElement = memberListEl; // Store ref to UL for members
+        });
+
+        let overallPlayerIndex = 0; // To pick players in their shuffled order for assignment
+
+        for (const team of teams) { // Iterate through the prepared teams
+            for (let i = 0; i < team.size; i++) {
+                if (overallPlayerIndex < playersInfo.length) { // Check if there are players left (using original playersInfo for count)
+                    // Find the player to assign based on the shuffled order used in prepareTeams
+                    // This is tricky because prepareTeams consumes a *copy* of shuffled players.
+                    // We need to iterate through the *actual* players assigned to *this team*.
+                    const playerToAssign = team.members[i];
+                    if (!playerToAssign) continue; // Should not happen if logic is correct
+
+                    const playerElement = playerToAssign.element; // The <li> element in the top list
+
+                    // 1. Animate basketball to the player
+                    const playerRect = playerElement.getBoundingClientRect();
+                    const animationContainerRect = animationContainer.getBoundingClientRect();
+
+                    // Calculate target X for the basketball within the animation container
+                    // The playerListUL might scroll, so get position relative to viewport first
+                    let targetX = playerRect.left - animationContainerRect.left + (playerRect.width / 2) - (basketballElement.offsetWidth / 2);
+
+                    // Adjust for horizontal scroll of playerListUL
+                    targetX += playerListUL.scrollLeft;
+
+                    // Scroll player element into view if list is scrollable
+                    playerElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    await delay(400); // Give scrolling a bit of time to settle if it happens
+
+                    basketballElement.style.left = `${targetX}px`;
+
+                    // Rotation Logic:
+                    // The basketball rolls (spins). When it stops, the nozzle (at its top) should point downwards.
+                    let currentYTranslate = 'translateY(-50%)'; // Keep the vertical centering
+                    let currentRotationMatch = basketballElement.style.transform.match(/rotate\(([^deg)]+)deg\)/);
+                    let currentRotationDegrees = currentRotationMatch && !isNaN(parseFloat(currentRotationMatch[1])) ? parseFloat(currentRotationMatch[1]) : 0;
+
+                    // Add 2 full spins for rolling effect, then add 180 deg to point the nozzle (assumed at the top of the basketball) downwards.
+                    let newRotationDegrees = currentRotationDegrees + (360 * 2) + 180;
+                    basketballElement.style.transform = `${currentYTranslate} rotate(${newRotationDegrees}deg)`;
+                    // The airNozzle is a child and will rotate with the basketball. No separate rotation for nozzle needed.
+
+                    playerElement.classList.add('highlighted');
+                    await delay(1200); // Pause for "selection"
+
+                    // 2. Visually assign player
+                    playerElement.classList.remove('highlighted');
+                    playerElement.classList.add('assigned'); // Mark as assigned in the top list
+
+                    const assignedPlayerDisplay = document.createElement('li');
+                    assignedPlayerDisplay.textContent = playerToAssign.name;
+                    team.memberListULElement.appendChild(assignedPlayerDisplay);
+                    team.memberElements.push(assignedPlayerDisplay); // Store for potential future use
+
+                    overallPlayerIndex++;
+                    await delay(600); // Pause after assignment
+                }
             }
         }
 
-        // Fallback if no perfect combination is found (should not happen with numbers > 6 and team sizes 3,4)
-        // This logic might need refinement for edge cases not covered by the primary loop,
-        // but the problem constraints (total > 6, team sizes 3 or 4) usually make it solvable.
-        // For example, 7 players: one team of 4, one team of 3. (x=1, y=1) -> 4*1 + 3*1 = 7. Loop: x=1. 7 - 4 = 3. 3%3==0. So numTeamsOfFour=1, numTeamsOfThree=1.
-        // 8 players: two teams of 4. (x=2, y=0) -> 4*2 + 3*0 = 8. Loop: x=2. 8 - 8 = 0. 0%3==0. So numTeamsOfFour=2, numTeamsOfThree=0.
-        // 9 players: three teams of 3. (x=0, y=3) -> 4*0 + 3*3 = 9. Loop: x=2 (8, rem 1), x=1 (4, rem 5), x=0 (0, rem 9). 9%3==0. So numTeamsOfFour=0, numTeamsOfThree=3.
-        // 10 players: one t4, two t3. (x=1, y=2) -> 4*1+3*2=10. Loop: x=2 (8, rem 2), x=1 (4, rem 6). 6%3==0. numTeamsOfFour=1, numTeamsOfThree=2.
-        // 11 players: two t4, one t3. (x=2, y=1) -> 4*2+3*1=11. Loop: x=2 (8, rem 3). 3%3==0. numTeamsOfFour=2, numTeamsOfThree=1.
+        // Hide basketball after all assignments are done
+        await delay(500);
+        basketballElement.classList.remove('visible');
+        basketballElement.style.left = '-60px';
 
-        let playerIndex = 0;
-        for (let i = 0; i < numTeamsOfFour; i++) {
-            teams.push(players.slice(playerIndex, playerIndex + 4));
-            playerIndex += 4;
-        }
-
-        for (let i = 0; i < numTeamsOfThree; i++) {
-            teams.push(players.slice(playerIndex, playerIndex + 3));
-            playerIndex += 3;
-        }
-
-        // If after forming teams of 4 and 3, there are still players left,
-        // it means the initial logic for numTeamsOfFour and numTeamsOfThree might have an issue for some edge totalPlayers.
-        // This can happen if totalPlayers is small like 1, 2, 5. But rule is totalPlayers > 6.
-        // For totalPlayers = 7: one 4, one 3.
-        // For totalPlayers = 8: two 4s.
-        // For totalPlayers = 9: three 3s.
-        // For totalPlayers = 10: one 4, two 3s.
-        // For totalPlayers = 11: two 4s, one 3.
-        // For totalPlayers = 13: one 4, three 3s (4*1 + 3*3 = 13) OR two 4s, one 3, one 2 (not allowed). Let's re-check logic for 13.
-        // totalPlayers = 13:
-        // x = floor(13/4) = 3. remaining = 13 - 12 = 1. 1%3 !=0
-        // x = 2. remaining = 13 - 8 = 5. 5%3 != 0
-        // x = 1. remaining = 13 - 4 = 9. 9%3 == 0. So numTeamsOfFour = 1, numTeamsOfThree = 3. Correct.
-        // What if totalPlayers = 5? (Constraint is > 6, but for testing the distribution)
-        // x = 1. rem = 1.
-        // x = 0. rem = 5.
-        // This implies that for some numbers, no combination of 3 and 4 might work if we don't allow flexible team counts.
-        // However, it's a known mathematical result (Frobenius Coin Problem for 2 coins) that any integer N > a*b - a - b can be expressed as ax + by.
-        // For a=3, b=4: 3*4 - 3 - 4 = 12 - 7 = 5. So any number of players > 5 can be formed with teams of 3 and 4.
-        // Since our constraint is totalPlayers > 6, this will always work.
-
-
-        return teams;
+        startAssignmentBtn.disabled = false; // Re-enable buttons after animation
+        if(resetBtn) resetBtn.disabled = false;
     }
 
-    function displayTeams(teams) {
-        if (teams.length === 0) {
-            teamsResultDiv.innerHTML = '<p>Could not form teams with the given number of players.</p>'; // Should not happen with >6 players
-            return;
-        }
-
-        const ul = document.createElement('ul');
-        teams.forEach((team, index) => {
-            const li = document.createElement('li');
-            li.innerHTML = `<strong>Team ${index + 1} (Size: ${team.length}):</strong> ${team.join(', ')}`;
-            ul.appendChild(li);
-        });
-        teamsResultDiv.appendChild(ul);
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
+
 });
+```
