@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const playerCircleContainerEl = document.getElementById('player-list'); // Renamed from playerListUL
     const teamsDisplayDiv = document.getElementById('teams-display');
     const basketballElement = document.getElementById('basketball');
-    const animationContainer = document.getElementById('animation-container');
+    // const animationContainer = document.getElementById('animation-container'); // Removed
     const resetBtn = document.getElementById('reset-btn');
 
     let playersInfo = []; // Stores {id, name, element, originalOrder}
@@ -88,26 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
             playerDiv.classList.add('player-cartoon');
             playerDiv.dataset.playerId = player.id;
 
-            const headDiv = document.createElement('div');
-            headDiv.classList.add('player-head');
-            playerDiv.appendChild(headDiv);
-
-            const bodyDiv = document.createElement('div');
-            bodyDiv.classList.add('player-body');
-
             const nameSpan = document.createElement('span');
             nameSpan.classList.add('player-name');
             nameSpan.textContent = player.name;
-            bodyDiv.appendChild(nameSpan);
-            playerDiv.appendChild(bodyDiv);
-
-            const leftHandDiv = document.createElement('div');
-            leftHandDiv.classList.add('player-hand', 'left-hand');
-            playerDiv.appendChild(leftHandDiv);
-
-            const rightHandDiv = document.createElement('div');
-            rightHandDiv.classList.add('player-hand', 'right-hand');
-            playerDiv.appendChild(rightHandDiv);
+            playerDiv.appendChild(nameSpan);
 
             playerCircleContainerEl.appendChild(playerDiv);
             player.element = playerDiv; // Store reference to the main player div
@@ -223,18 +207,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Animation Related Functions ---
     async function startAnimationSequence() {
-        // Initial basketball position: center of the animation container
-        const animationContainerRect = animationContainer.getBoundingClientRect();
-        const initialBasketballX = animationContainerRect.width / 2 - basketballElement.offsetWidth / 2;
-        const initialBasketballY = animationContainerRect.height / 2 - basketballElement.offsetHeight / 2;
-
-        basketballElement.style.left = `${initialBasketballX}px`;
-        basketballElement.style.top = `${initialBasketballY}px`;
-        basketballElement.style.transform = 'rotate(0deg)'; // No Y-translation needed if top/left set center
-
-        // const basketballAirNozzle = basketballElement.querySelector('#air-nozzle'); // Nozzle is part of visual
+        // Basketball is now centered via CSS within playerCircleContainerEl.
+        // JS just ensures its initial rotation and visibility.
+        basketballElement.style.transform = 'translate(-50%, -50%) rotate(0deg)';
         basketballElement.classList.add('visible');
         await delay(300); // Short delay for visibility
+
+        // Get properties of the player circle container for calculations
+        const circleContainerRect = playerCircleContainerEl.getBoundingClientRect();
+        const circleCenterX = playerCircleContainerEl.offsetWidth / 2; // Relative to its own origin
+        const circleCenterY = playerCircleContainerEl.offsetHeight / 2; // Relative to its own origin
 
         // Create team card structures in the DOM
         teamsDisplayDiv.innerHTML = ''; // Clear any previous team cards
@@ -267,60 +249,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!playerToAssign) continue; // Should not happen if logic is correct
 
                     const playerElement = playerToAssign.element;
+                    const playerIndex = playersInfo.findIndex(p => p.id === playerToAssign.id); // Get index for angle calc
 
-                    // 1. Animate basketball to the player
-                    const playerRect = playerElement.getBoundingClientRect();
-                    // animationContainerRect is already available from the start of the function
-
-                    // Calculate target X and Y for the basketball's center to align with player's center
-                    // relative to the animationContainer
-                    const targetCenterX = playerRect.left - animationContainerRect.left + playerRect.width / 2;
-                    const targetCenterY = playerRect.top - animationContainerRect.top + playerRect.height / 2;
-
-                    // Set basketball's top-left to position its center at (targetCenterX, targetCenterY)
-                    const targetBasketballX = targetCenterX - basketballElement.offsetWidth / 2;
-                    const targetBasketballY = targetCenterY - basketballElement.offsetHeight / 2;
-
-                    basketballElement.style.left = `${targetBasketballX}px`;
-                    basketballElement.style.top = `${targetBasketballY}px`;
+                    // 1. Basketball STAYS CENTERED. We only update its rotation.
+                    // No change to basketballElement.style.left or basketballElement.style.top here.
 
                     // Rotation Logic:
-                    // Basketball needs to rotate so its "top" (where nozzle is) points towards the player.
-                    // Get current basketball center
-                    const basketballRect = basketballElement.getBoundingClientRect();
-                    const basketballCenterX = basketballRect.left - animationContainerRect.left + basketballRect.width / 2;
-                    const basketballCenterY = basketballRect.top - animationContainerRect.top + basketballRect.height / 2;
+                    // Basketball (at circleCenterX, circleCenterY) needs to point its nozzle towards the player.
+                    // Get player's angle in the circle (same as in renderPlayerListAndPositionInCircle)
+                    const numPlayers = playersInfo.length;
+                    const playerAngleRad = (playerIndex / numPlayers) * 2 * Math.PI - (Math.PI / 2);
 
-                    // Angle from current basketball center to target player center
-                    let angleToPlayer = Math.atan2(targetCenterY - basketballCenterY, targetCenterX - basketballCenterX) * 180 / Math.PI;
+                    // The player's center coordinates (needed if basketball wasn't at origin of these calculations)
+                    // For nozzle pointing, we just need the angle from basketball (center) to player.
+                    // This angle IS playerAngleRad if basketball is at (0,0) of the circle's coordinate system.
 
-                    // Adjust angle so 0 degrees is "up" for the basketball sprite, then add angleToPlayer
-                    // Our nozzle is at the "top" of the basketball. If basketball's 0deg rotation means nozzle is up,
-                    // then we need to rotate it by `angleToPlayer` (plus 90 deg because atan2's 0 is to the right).
-                    let rotationForNozzle = angleToPlayer + 90;
+                    // Convert player's angle in the circle to degrees for CSS rotation.
+                    // Add 90 degrees because atan2's 0 rad is to the right, and nozzle is at "top" of basketball.
+                    let targetNozzleRotationDeg = (playerAngleRad * 180 / Math.PI) + 90;
 
                     // Add some spins for rolling effect
-                    let currentTransform = basketballElement.style.transform;
+                    let currentTransform = basketballElement.style.transform; // e.g., "translate(-50%, -50%) rotate(0deg)"
                     let currentRotationMatch = currentTransform.match(/rotate\(([^deg)]+)deg\)/);
-                    let currentRotationDegrees = currentRotationMatch && !isNaN(parseFloat(currentRotationMatch[1])) ? parseFloat(currentRotationMatch[1]) : 0;
+                    let currentActualRotationDeg = currentRotationMatch && !isNaN(parseFloat(currentRotationMatch[1]))
+                                                ? parseFloat(currentRotationMatch[1])
+                                                : 0;
 
-                    // Ensure it spins a few times towards the new direction
-                    // To make it look like it rolls *towards* the player, this is more complex.
-                    // For now, just spin and then orient.
-                    let newVisualRotation = currentRotationDegrees + (360 * 2); // Spin effect
+                    // Add a couple of full spins to the current rotation before settling on target
+                    // To make it look like it rolls *towards* the player, the spin direction matters.
+                    // For simplicity, always spin a couple of times extra.
+                    let newVisualRotationDeg = currentActualRotationDeg + (360 * 2);
 
-                    basketballElement.style.transform = `rotate(${newVisualRotation + rotationForNozzle}deg)`;
-                    // This might be too much rotation at once. Simpler:
-                    // basketballElement.style.transform = `rotate(${rotationForNozzle}deg)`; // Just point nozzle
-                    // Let's try with a spin then final orientation:
-                    // First, animate to position with a generic spin, then a quick turn to point.
-                    // This is hard to do with a single transition.
-                    // Alternative: basketball has a constant "rolling" animation via CSS, and JS just sets final orientation.
-                    // For now, let's set the final orientation directly, plus some arbitrary spins.
-                    // The transition in CSS handles the actual animation of rotation.
+                    // The final rotation includes the spin and the target nozzle orientation
+                    basketballElement.style.transform = `translate(-50%, -50%) rotate(${newVisualRotationDeg + targetNozzleRotationDeg}deg)`;
+                    // This is adding targetNozzleRotationDeg to an already large newVisualRotationDeg.
+                    // This might spin too much or unpredictably.
+                    // Correct approach: Spin a lot, then set to the target angle.
+                    // The CSS transition will make it appear to spin towards the final angle.
+                    // So, the final angle for the rotate() should be the targetNozzleRotationDeg plus N*360 for spins.
 
-                    basketballElement.style.transform = `rotate(${currentRotationDegrees + (360*2) + rotationForNozzle}deg)`;
+                    // Let's find the shortest angle to spin.
+                    // Smallest difference between currentActualRotationDeg and targetNozzleRotationDeg
+                    let diff = (targetNozzleRotationDeg - (currentActualRotationDeg % 360) + 360) % 360;
+                    if (diff > 180) {
+                        diff -= 360; // Spin the other way for shorter path
+                    }
+                    let finalRotationDeg = currentActualRotationDeg + diff + (360 * 2); // 2 full spins + shortest path correction
 
+
+                    basketballElement.style.transform = `translate(-50%, -50%) rotate(${finalRotationDeg}deg)`;
 
                     playerElement.classList.add('highlighted');
                     await delay(1200); // Pause for "selection"
