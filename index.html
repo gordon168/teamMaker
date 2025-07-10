@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basketball Team Assignment</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Basketball Team Generator</h1>
+        <div class="input-area">
+            <label for="totalPlayers">Enter total number of players:</label>
+            <input type="number" id="totalPlayers" min="1">
+            <button id="generateButton">Generate Teams</button>
+        </div>
+        <div id="errorMessages" class="error-message"></div>
+        <div id="teamsResult" class="teams-result">
+            <!-- Team assignments will be displayed here -->
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
