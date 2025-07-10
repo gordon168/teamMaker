@@ -1,365 +1,159 @@
-/* General Body Styles */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
+    font-family: 'Arial', sans-serif;
+    background-color: #f0f0f0;
     color: #333;
-    line-height: 1.6;
-}
-
-header {
-    background-color: #ff8c00; /* Orange color like a basketball */
-    color: #fff;
-    padding: 1rem 0;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    border-bottom: #e07b00 3px solid;
 }
 
-header h1 {
-    margin: 0;
-}
-
-main {
-    padding: 1rem;
-    max-width: 900px;
-    margin: 20px auto;
+.container {
     background-color: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 20px;
     border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 800px; /* Max width for larger screens */
 }
 
-section {
-    margin-bottom: 2rem;
-    padding: 1rem;
-    border-bottom: 1px solid #eee;
+h1 {
+    color: #e67e22; /* Orange color for basketball theme */
 }
 
-section:last-child {
-    border-bottom: none;
+.input-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
 }
 
-h2, h3 {
-    color: #333;
+.input-section label {
+    margin-right: 10px;
+    font-weight: bold;
 }
 
-/* Input Section */
-#input-section label {
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-#input-section input[type="number"] {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
+.input-section input[type="number"] {
+    padding: 8px;
+    border: 1px solid #ddd;
     border-radius: 4px;
-    margin-right: 0.5rem;
-    width: 100px;
+    width: 80px;
+    text-align: center;
 }
 
-#input-section button {
-    padding: 0.6rem 1rem;
-    background-color: #ff8c00;
+.input-section button {
+    padding: 10px 15px;
+    background-color: #e67e22;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1em;
+    margin-left: 10px;
+    transition: background-color 0.3s ease;
 }
 
-#input-section button:hover {
-    background-color: #e07b00;
+.input-section button:hover {
+    background-color: #d35400;
 }
 
-.error {
-    color: red;
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-}
-
-/* Assignment Area */
-#assignment-area {
+.visualization-section {
+    margin-bottom: 20px;
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-#player-list-container {
-    border: 1px solid #ddd;
-    padding: 1rem;
-    border-radius: 4px;
-    background-color: #f9f9f9;
-    min-height: 100px; /* Ensure it has some height even when empty */
-    overflow-x: auto; /* Allow horizontal scrolling if many players */
-}
-
-#player-list {
-    list-style-type: none;
-    padding: 0;
-    display: flex; /* Arrange players in a row for rolling animation */
-    flex-wrap: nowrap; /* Prevent wrapping to make rolling easier */
-    gap: 10px;
-    min-width: min-content; /* Ensure container is wide enough for all players */
-}
-
-#player-list li {
-    background-color: #e7e7e7;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-weight: bold;
-    white-space: nowrap; /* Keep player name on one line */
-}
-
-/* Animation Container */
-#animation-container {
-    border: 1px dashed #ccc;
-    padding: 1rem;
-    text-align: center;
-    min-height: 120px;
-    position: relative;
-    overflow: hidden; /* Hide basketball when it's off-screen */
-}
-
-#basketball {
-    width: 50px;
-    height: 50px;
-    background-color: #ff8c00;
-    border-radius: 50%;
-    position: absolute;
-    border: 2px solid #5A3A22;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    opacity: 0;  /* Initially hidden */
-    left: -60px; /* Start off-screen */
-    top: 50%; /* Vertically center relative to animation-container */
-    transform: translateY(-50%); /* Adjust for exact vertical centering */
-    transition: opacity 0.3s ease-in-out, left 0.5s ease-in-out, top 0.5s ease-in-out, transform 0.5s ease-in-out;
+    align-items: center;
 }
 
-#air-nozzle {
-    width: 8px;
-    height: 8px;
-    background-color: #000;
-    border-radius: 50%;
-    position: absolute;
-    top: 5px;
-    left: 50%;
-    transform: translateX(-50%);
+#player-canvas {
+    border: 2px solid #e67e22;
+    border-radius: 50%; /* Make the canvas border circular if desired, though content is circular */
+    background-color: #fff8f0; /* Light cream background for canvas */
+    /* Canvas dimensions are set in HTML. CSS can scale it down if needed. */
+    max-width: 100%; /* Ensure canvas scales down on smaller viewports */
+    height: auto;   /* Maintain aspect ratio when scaling */
 }
 
-/* Teams Section */
-#teams-display {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
+.results-section {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
 }
 
-.team-card {
-    background-color: #eef;
-    border: 1px solid #ccf;
-    border-radius: 4px;
-    padding: 1rem;
-}
-
-.team-card h4 {
+.results-section h2 {
+    color: #e67e22;
     margin-top: 0;
-    color: #337ab7;
-    border-bottom: 1px solid #aac;
-    padding-bottom: 0.5rem;
 }
 
-.team-card ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.team-card ul li {
+#teams-output .team {
     background-color: #fff;
-    padding: 0.3rem 0.5rem;
-    margin-bottom: 0.3rem;
-    border-radius: 3px;
-    border: 1px solid #eee;
+    border: 1px solid #ddd;
+    border-left: 5px solid #e67e22; /* Accent color for team cards */
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    text-align: left;
 }
 
-footer {
-    text-align: center;
-    margin-top: 2rem;
-    padding: 1rem;
-    background-color: #333;
-    color: #fff;
-    font-size: 0.9rem;
+#teams-output .team h3 {
+    margin-top: 0;
+    color: #d35400;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-    #input-section input[type="number"] {
-        width: calc(100% - 120px); /* Adjust width considering button */
-        margin-bottom: 0;
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
     }
-    #input-section button {
-        width: auto; /* Allow button to size to its content */
-        margin-top: 0;
-    }
-    #player-list {
-        /* flex-wrap: wrap; Allow wrapping on smaller screens if still too wide */
-        /* justify-content: center; */
-    }
-}
 
-@media (max-width: 480px) {
-    main {
-        margin: 10px;
-        padding: 0.5rem;
+    .container {
+        padding: 15px;
     }
-    header h1 {
-        font-size: 1.5rem;
-    }
-    #input-section {
+
+    .input-section {
         display: flex;
         flex-direction: column;
+        align-items: center;
     }
-    #input-section input[type="number"] {
-        width: 100%;
-        margin-bottom: 0.5rem;
+
+    .input-section label {
+        margin-bottom: 8px;
+        margin-right: 0;
     }
-    #input-section button {
-        width: 100%;
+
+    .input-section input[type="number"] {
+        width: 100px; /* Slightly wider for easier touch */
+        margin-bottom: 10px;
     }
-    #teams-display {
-        grid-template-columns: 1fr;
+
+    .input-section button {
+        width: auto; /* Allow button to size to content or set specific width */
+        padding: 10px 20px;
+        margin-left: 0;
     }
-}
 
-/* --- New Player Cartoon Styles --- */
-.player-circle-container { /* This is #player-list */
-    position: relative;
-    width: 300px; /* Example size, can be adjusted */
-    height: 300px; /* Example size, can be adjusted */
-    margin: 20px auto; /* Center it */
-    border: 2px dashed #ccc; /* For visualization */
-    border-radius: 50%; /* Make the container visually a circle too */
-    padding: 0; /* Override default ul padding if any was inherited by mistake */
-    display: flex; /* Use flex to easily center if only one item for some reason */
-    align-items: center;
-    justify-content: center;
-}
-
-.player-cartoon {
-    position: absolute; /* Positioned by JS transforms */
-    width: 60px;  /* Includes body and some space for hands */
-    height: 80px; /* Total height of the cartoon */
-    /* background-color: rgba(200, 200, 255, 0.5); For debugging position */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    /* transform-origin: center center; Will be set by JS */
-}
-
-.player-head {
-    width: 30px;
-    height: 30px;
-    background-color: #f0e68c; /* Khaki - skin tone */
-    border-radius: 50%;
-    border: 1px solid #5A3A22;
-    z-index: 2;
-}
-
-.player-body {
-    width: 40px;
-    height: 40px;
-    background-color: #add8e6; /* Light blue - shirt */
-    border: 1px solid #5A3A22;
-    border-radius: 5px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative; /* For hands positioning */
-    margin-top: -5px; /* Overlap head slightly */
-    z-index: 1;
-}
-
-.player-name {
-    font-size: 0.6rem;
-    color: #000;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-.player-hand {
-    width: 10px;
-    height: 15px; /* Length of the arm/hand */
-    background-color: #f0e68c; /* Skin tone */
-    border: 1px solid #5A3A22;
-    border-radius: 3px;
-    position: absolute;
-    top: 5px; /* Position relative to the body */
-    z-index: 0; /* Behind body but in front of other players if overlapping */
-}
-
-.left-hand {
-    left: -8px; /* Extend from left side of body */
-    transform: rotate(30deg); /* Angle hands slightly */
-}
-
-.right-hand {
-    right: -8px; /* Extend from right side of body */
-    transform: rotate(-30deg); /* Angle hands slightly */
-}
-
-
-/* --- Original Animation Styles - May need adjustments --- */
-
-/* Player item in the circle when highlighted */
-.player-cartoon.highlighted .player-body {
-    background-color: #ffc107; /* Yellow highlight on body */
-    box-shadow: 0 0 8px rgba(255, 140, 0, 0.7);
-    transition: background-color 0.2s, box-shadow 0.2s;
-}
-.player-cartoon.highlighted .player-head {
-    transform: scale(1.1); /* Slightly larger head */
-    transition: transform 0.2s;
-}
-
-
-/* Class to make basketball visible and start its entry */
-#basketball.visible {
-    opacity: 1;
-    /* left will be controlled by JS for movement */
-}
-
-/* Class for assigned player in the circle list */
-.player-cartoon.assigned {
-    opacity: 0.4;
-    /* text-decoration: line-through; No easy way for whole cartoon */
-    transition: opacity 0.5s;
-}
-
-/* Remove old #player-list li styling if it conflicts or is unneeded */
-#player-list li, #player-list li.assigned {
-    /* These styles were for the old linear list.
-       They might not be needed or could conflict.
-       For now, let's override/disable them if they were too specific.
-       Since #player-list is now a div, these won't apply directly unless
-       we accidentally create LIs again.
+    /* The canvas has fixed dimensions (500x500).
+       max-width: 100% and height: auto will scale it down proportionally.
+       If the canvas drawing needs to be crisp at multiple sizes,
+       it would need to be redrawn at different base dimensions using JavaScript,
+       but for this project, CSS scaling is acceptable.
+       No explicit width/height override needed here if HTML provides base and CSS scales.
     */
-    display: none; /* Effectively disable old list item styles */
 }
 
-/* Ensure #player-list (now .player-circle-container) doesn't have old flex styles for linear list */
-#player-list { /* This is also .player-circle-container */
-    list-style-type: none; /* Was relevant for UL, not harmful for DIV */
-    /* display: flex; */ /* This was for linear arrangement, remove or override */
-    /* flex-wrap: nowrap; */ /* Remove */
-    /* gap: 10px; */ /* Remove */
-    /* min-width: min-content; */ /* Remove */
-    /* overflow-x: auto; */ /* Remove, circle has fixed size for now */
-    /* These are handled by .player-circle-container specific styles now */
+@media (max-width: 400px) {
+    h1 {
+        font-size: 1.5em;
+    }
+    .input-section input[type="number"] {
+        padding: 6px;
+        font-size: 0.9em;
+    }
+    .input-section button {
+        font-size: 0.9em;
+        padding: 8px 15px;
+    }
+    /* Further canvas size adjustments if needed, but max-width should handle it */
 }
-
-
-```
