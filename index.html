@@ -7,18 +7,48 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Basketball Team Generator</h1>
-        <div class="input-area">
-            <label for="totalPlayers">Enter total number of players:</label>
-            <input type="number" id="totalPlayers" min="1">
-            <button id="generateButton">Generate Teams</button>
-        </div>
-        <div id="errorMessages" class="error-message"></div>
-        <div id="teamsResult" class="teams-result">
-            <!-- Team assignments will be displayed here -->
-        </div>
-    </div>
+    <header>
+        <h1>Basketball Team Assigner</h1>
+    </header>
+
+    <main>
+        <section id="input-section">
+            <h2>Setup</h2>
+            <label for="player-count">Enter Total Number of Players:</label>
+            <input type="number" id="player-count" name="player-count" min="6">
+            <button id="start-assignment-btn">Assign Teams</button>
+            <button id="reset-btn" style="background-color: #777;">Reset</button> <!-- Added Reset Button -->
+            <p id="error-message" class="error"></p>
+        </section>
+
+        <section id="assignment-area">
+            <div id="player-list-container">
+                <h3>Players</h3>
+                <div id="player-list" class="player-circle-container"> <!-- Changed ul to div and added a class -->
+                    <!-- Player items will be generated here by JavaScript -->
+                </div>
+            </div>
+
+            <div id="animation-container">
+                <!-- Basketball animation will happen here -->
+                <div id="basketball">
+                    <div id="air-nozzle"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="teams-section">
+            <h2>Teams</h2>
+            <div id="teams-display">
+                <!-- Teams will be displayed here by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Basketball Fun</p>
+    </footer>
+
     <script src="script.js"></script>
 </body>
 </html>
