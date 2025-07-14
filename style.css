@@ -1,159 +1,140 @@
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #f0f0f0;
-    color: #333;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-}
-
-.container {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    width: 90%;
-    max-width: 800px; /* Max width for larger screens */
-}
-
-h1 {
-    color: #e67e22; /* Orange color for basketball theme */
-}
-
-.input-section {
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 6px;
-}
-
-.input-section label {
-    margin-right: 10px;
-    font-weight: bold;
-}
-
-.input-section input[type="number"] {
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    width: 80px;
-    text-align: center;
-}
-
-.input-section button {
-    padding: 10px 15px;
-    background-color: #e67e22;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1em;
-    margin-left: 10px;
-    transition: background-color 0.3s ease;
-}
-
-.input-section button:hover {
-    background-color: #d35400;
-}
-
-.visualization-section {
-    margin-bottom: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+    color: #333;
 }
 
-#player-canvas {
-    border: 2px solid #e67e22;
-    border-radius: 50%; /* Make the canvas border circular if desired, though content is circular */
-    background-color: #fff8f0; /* Light cream background for canvas */
-    /* Canvas dimensions are set in HTML. CSS can scale it down if needed. */
-    max-width: 100%; /* Ensure canvas scales down on smaller viewports */
-    height: auto;   /* Maintain aspect ratio when scaling */
+.container {
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.results-section {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 6px;
+.input-container {
+    margin-bottom: 30px;
 }
 
-.results-section h2 {
-    color: #e67e22;
-    margin-top: 0;
-}
-
-#teams-output .team {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-left: 5px solid #e67e22; /* Accent color for team cards */
+#player-count {
     padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    text-align: left;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    margin-right: 10px;
 }
 
-#teams-output .team h3 {
+#start-btn {
+    padding: 10px 20px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#start-btn:hover {
+    background-color: #0056b3;
+}
+
+.player-circle-container {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    margin: 20px auto;
+}
+
+.player-circle {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px dashed #007bff;
+}
+
+.player {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background-color: #fff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    background-image: url('player.png'); /* Add player image */
+    background-size: cover;
+    color: transparent; /* Hide text */
+}
+
+.basketball {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    background-image: url('basketball.png');
+    background-size: cover;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    transition: transform 1s ease-in-out;
+}
+
+@keyframes roll {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.player.selected {
+    border: 3px solid #ff8c00;
+    transform: scale(1.1);
+}
+
+.teams-container {
+    margin-top: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+}
+
+.team {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    min-width: 150px;
+}
+
+.team h3 {
     margin-top: 0;
-    color: #d35400;
+    color: #007bff;
 }
 
-/* Responsive adjustments */
 @media (max-width: 600px) {
-    body {
+    .container {
+        width: 95%;
         padding: 10px;
     }
 
-    .container {
-        padding: 15px;
+    .player-circle-container {
+        width: 280px;
+        height: 280px;
     }
 
-    .input-section {
-        display: flex;
+    .player {
+        width: 50px;
+        height: 50px;
+    }
+
+    .teams-container {
         flex-direction: column;
         align-items: center;
     }
-
-    .input-section label {
-        margin-bottom: 8px;
-        margin-right: 0;
-    }
-
-    .input-section input[type="number"] {
-        width: 100px; /* Slightly wider for easier touch */
-        margin-bottom: 10px;
-    }
-
-    .input-section button {
-        width: auto; /* Allow button to size to content or set specific width */
-        padding: 10px 20px;
-        margin-left: 0;
-    }
-
-    /* The canvas has fixed dimensions (500x500).
-       max-width: 100% and height: auto will scale it down proportionally.
-       If the canvas drawing needs to be crisp at multiple sizes,
-       it would need to be redrawn at different base dimensions using JavaScript,
-       but for this project, CSS scaling is acceptable.
-       No explicit width/height override needed here if HTML provides base and CSS scales.
-    */
-}
-
-@media (max-width: 400px) {
-    h1 {
-        font-size: 1.5em;
-    }
-    .input-section input[type="number"] {
-        padding: 6px;
-        font-size: 0.9em;
-    }
-    .input-section button {
-        font-size: 0.9em;
-        padding: 8px 15px;
-    }
-    /* Further canvas size adjustments if needed, but max-width should handle it */
 }
